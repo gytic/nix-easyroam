@@ -19,6 +19,14 @@ in
         This will be extracted into the client certificate, root certificate and private key.
       '';
     };
+    manualInstall = lib.mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Dont start install-service automatically.
+        Usefull when the secret file is not available on boot.
+      '';
+    };
     privateKeyPassPhrase = lib.mkOption {
       type = types.nonEmptyStr;
       default = "memezlmao";
@@ -179,7 +187,7 @@ in
     in
     lib.mkIf cfg.enable {
       systemd.services.easyroam-install = {
-        wantedBy = [ "multi-user.target" ];
+        wantedBy = lib.optional (!cfg.manualInstall) [ "multi-user.target" ];
         wants = [ "sops-install-secrets.service" ];
 
         after = [ "NetworkManager.service" ] ++ wpaUnitServices;
